@@ -1,6 +1,4 @@
 load_sdmx_from_eurostat <- function(dataset = "demo_fmonth") {
-  library(rsdmx)
-  
   url <- sprintf("http://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&file=data%%2F%s.sdmx.zip", dataset)
   sdmx <- sprintf("%s.sdmx.xml", dataset)
   dsd <- sprintf("%s.dsd.xml", dataset)

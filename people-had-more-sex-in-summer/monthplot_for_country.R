@@ -1,6 +1,4 @@
 monthplot_for_country <- function(data, country, sw=12, tw=36, pstl=FALSE, yred) {
-  library(forecast)
-  
   ts <- extract_ts_for_country(data, country)
   
   stl <- stl(ts, s.window=sw, t.window=tw)

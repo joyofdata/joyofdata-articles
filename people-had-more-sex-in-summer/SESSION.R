@@ -1,8 +1,11 @@
+library(rsdmx)
+library(forecast)
+
 source("./extract_ts_for_country.R")
 source("./load_sdmx_from_eurostat.R")
 source("./monthplot_for_country.R")
 
-d <- load_sdmx_from_eurostat()
+d <- load_sdmx_from_eurostat(dataset = "demo_fmonth")
 
 #> table(d$data$geo)[table(d$data$geo) > 600]
 #
