@@ -10,6 +10,7 @@ monthplot_for_country <- function(data, country, sw=12, tw=36, pstl=FALSE, yred)
 
   if(pstl) {
     plot(stl, main=title)
+    cat("press [any key] ...")
     l <- readline()
   }
   
