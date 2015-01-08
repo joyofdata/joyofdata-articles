@@ -11,12 +11,21 @@ hw_forecast <- function(df, m, h, al, be, ga) {
   s[1] <- 1
   yh[1:2] <- y[1:2]
   
-  for(t in 2:(length(y)+h)) {
-    yh_t <- ifelse(t > length(y), yh[t], y[t])
-    l[t] <- al * (yh_t - s[max(1,t-m)]) + (1 - al) * (l[t-1] + b[t-1])
-    b[t] <- be * (l[t] - l[t-1]) + (1 - be) * b[t-1]
-    s[t] <- ga * (yh_t - l[t-1] - b[t-1]) + (1 - ga) * s[max(1,t-m)]
-    yh[t+1] <- l[t] + b[t] + s[max(1,t-m+1)]
+  # smoothing
+  for(t in 2:length(y)) {
+    yh[t] <- l[t-1] + b[t-1] + s[max(1,t-m)]
+    l[t]  <- al * (y[t] - s[max(1,t-m)]) + (1 - al) * (l[t-1] + b[t-1])
+    b[t]  <- be * (l[t] - l[t-1]) + (1 - be) * b[t-1]
+    s[t]  <- ga * (y[t] - l[t-1] - b[t-1]) + (1 - ga) * s[max(1,t-m)]
+  }
+  
+  # forecasting
+  n <- length(y)
+  for(t in 1:h) {
+    yh[n+t] <- l[n] + t*b[n] + s[n-m+(t-1)%%m+1]
+    b[n+t]  <- b[n]
+    s[n+t]  <- s[n-m+(t-1)%%m+1]
+    l[n+t]  <- l[n]
   }
   
   return(list(
