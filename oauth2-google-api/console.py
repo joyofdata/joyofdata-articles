@@ -2,12 +2,14 @@
 # https://developers.google.com/api-client-library/python/auth/installed-app
 # https://developers.google.com/api-client-library/python/auth/web-app
 
+import sys
 import json
 import webbrowser
 import logging
 
 import httplib2
 import os.path
+
 
 from apiclient import discovery
 from oauth2client import client
@@ -33,12 +35,18 @@ def get_first_profile_id(service):
     return None
 
 def query_analytics(service, profile_id, start_date, end_date, metric):
-    return service.data().ga().get(
+    if profile_id == None or profile_id == "0":
+        profile_id = get_first_profile_id(service)
+
+    result = service.data().ga().get(
             ids = 'ga:' + profile_id,
             start_date = start_date,
             end_date = end_date,
             metrics = 'ga:' + metric
         ).execute()
+
+    return result 
+
 
 def read_credentials(fname):
     if os.path.isfile(fname):
@@ -67,23 +75,31 @@ def acquire_oauth2_credentials():
     
     credentials = flow.step2_exchange(auth_code)
     return credentials
- 
-if __name__ == '__main__':
+
+def create_service_object(credentials):
+    http_auth = httplib2.Http()
+    http_auth = credentials.authorize(http_auth)
+    service = discovery.build('analytics', 'v3', http_auth)
+    return service
+
+def main(credentials_file, profile_id, start_date, end_date, metric):
     logging.basicConfig()
 
-    filename_credentials = "credentials.json"
-    credentials = read_credentials(filename_credentials)
+    credentials = read_credentials(credentials_file)
 
     if credentials is None or credentials.invalid:
         credentials = acquire_oauth2_credentials()
-        write_credentials(filename_credentials, credentials)
+        write_credentials(credentials_file, credentials)
 
-    http_auth = credentials.authorize(httplib2.Http())
-  
-    service = discovery.build('analytics', 'v3', http_auth)
-  
-    profile_id = get_first_profile_id(service)
+    service = create_service_object(credentials)
+ 
 
-    results = query_analytics(service, profile_id, "2014-01-01", "2014-12-31", "users")
+    results = query_analytics(service, profile_id, start_date, end_date, metric)
 
-    print json.dumps(results, indent=4)
+    return json.dumps(results, indent=4)
+
+
+if __name__ == '__main__':
+    credentials_file, profile_id, start_date, end_date, metric = sys.argv[1:6]
+
+    print main(credentials_file, profile_id, start_date, end_date, metric)
