@@ -20,7 +20,8 @@ def get_first_profile_id(service):
 
     if accounts.get('items'):
         first_account_id = accounts.get('items')[0].get('id')
-        webproperties = service.management().webproperties().list(accountId = first_account_id).execute()
+        webprops = service.management().webproperties()
+        webprops = webprops.list(accountId = first_account_id).execute()
   
         if webproperties.get('items'):
             first_webproperty_id = webproperties.get('items')[0].get('id')
@@ -62,9 +63,9 @@ def write_credentials(fname, credentials):
     f.write(credentials.to_json())
     f.close()
 
-def acquire_oauth2_credentials():
+def acquire_oauth2_credentials(secrets_file):
     flow = client.flow_from_clientsecrets(
-        'client_secrets_joyofdata.de.api_installed.json',
+        secrets_file,
         scope='https://www.googleapis.com/auth/analytics.readonly',
         redirect_uri='urn:ietf:wg:oauth:2.0:oob')
     
@@ -82,13 +83,15 @@ def create_service_object(credentials):
     service = discovery.build('analytics', 'v3', http_auth)
     return service
 
-def main(credentials_file, profile_id, start_date, end_date, metric):
+def oauth2_and_query_analytics(
+        credentials_file, secrets_file, profile_id, 
+        start_date, end_date, metric):
     logging.basicConfig()
 
     credentials = read_credentials(credentials_file)
 
     if credentials is None or credentials.invalid:
-        credentials = acquire_oauth2_credentials()
+        credentials = acquire_oauth2_credentials(secrets_file)
         write_credentials(credentials_file, credentials)
 
     service = create_service_object(credentials)
@@ -100,6 +103,11 @@ def main(credentials_file, profile_id, start_date, end_date, metric):
 
 
 if __name__ == '__main__':
-    credentials_file, profile_id, start_date, end_date, metric = sys.argv[1:6]
+    profile_id, start_date, end_date, metric = sys.argv[1:5]
 
-    print main(credentials_file, profile_id, start_date, end_date, metric)
+    credentials_file = "credentials.json"
+    secrets_file = "client_secrets.json"
+
+    print oauth2_and_query_analytics(
+            credentials_file, secrets_file, profile_id, 
+            start_date, end_date, metric)
