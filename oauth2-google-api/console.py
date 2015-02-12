@@ -16,6 +16,7 @@ from oauth2client import client
 from oauth2client.file import Storage
 
 def get_first_profile_id(service):
+    """Fetches first profile ID of account."""
     accounts = service.management().accounts().list().execute()
 
     if accounts.get('items'):
@@ -33,9 +34,12 @@ def get_first_profile_id(service):
   
             if profiles.get('items')[0].get('id'):
                 return profiles.get('items')[0].get('id')
+
     return None
 
+
 def query_analytics(service, profile_id, start_date, end_date, metric):
+    """Performes simple query for profile."""
     if profile_id == None or profile_id == "0":
         profile_id = get_first_profile_id(service)
 
@@ -50,20 +54,26 @@ def query_analytics(service, profile_id, start_date, end_date, metric):
 
 
 def read_credentials(fname):
+    """Reads JSON with credentials from file."""
     if os.path.isfile(fname):
         f = open(fname, "r")
         credentials = client.OAuth2Credentials.from_json(f.read())
         f.close()
     else:
         credentials = None
+
     return credentials
 
+
 def write_credentials(fname, credentials):
+    """Writes credentials as JSON to file."""
     f = file(fname, "w")
     f.write(credentials.to_json())
     f.close()
 
+
 def acquire_oauth2_credentials(secrets_file):
+    """Flows through OAuth 2.0 authorization process for credentials."""
     flow = client.flow_from_clientsecrets(
         secrets_file,
         scope='https://www.googleapis.com/auth/analytics.readonly',
@@ -77,16 +87,20 @@ def acquire_oauth2_credentials(secrets_file):
     credentials = flow.step2_exchange(auth_code)
     return credentials
 
+
 def create_service_object(credentials):
+    """Creates Service object for credentials."""
     http_auth = httplib2.Http()
     http_auth = credentials.authorize(http_auth)
     service = discovery.build('analytics', 'v3', http_auth)
     return service
 
+
 def oauth2_and_query_analytics(
         credentials_file, secrets_file, profile_id, 
         start_date, end_date, metric):
     logging.basicConfig()
+    """Performs authorization and then queries GA."""
 
     credentials = read_credentials(credentials_file)
 
@@ -95,11 +109,10 @@ def oauth2_and_query_analytics(
         write_credentials(credentials_file, credentials)
 
     service = create_service_object(credentials)
- 
-
     results = query_analytics(service, profile_id, start_date, end_date, metric)
 
     return json.dumps(results, indent=4)
+
 
 
 if __name__ == '__main__':
