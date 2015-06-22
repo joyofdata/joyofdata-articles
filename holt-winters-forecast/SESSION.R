@@ -14,4 +14,4 @@ obj <- hw_forecast(df, m=7, h=28, al=.1, be=.1, ga=.1)
 plot_hw_forecast(obj)
 
 mod <- ets(ts(df$users, frequency=7), model="AAA")
-plot(forecast(mod, h=14))
+plot(forecast(mod, h=28))

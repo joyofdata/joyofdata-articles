@@ -1,10 +1,10 @@
 hw_forecast <- function(df, m, h, al, be, ga) {
   
   y  <- as.vector(df$users)
-  l  <- rep(NA,length(y))
-  b  <- rep(NA,length(y))
-  s  <- rep(NA,length(y))
-  yh <- rep(NA,length(y))
+  l  <- rep(NA,length(y)+h)
+  b  <- rep(NA,length(y)+h)
+  s  <- rep(NA,length(y)+h)
+  yh <- rep(NA,length(y)+h)
   
   l[1] <- 1
   b[1] <- 1
@@ -14,8 +14,9 @@ hw_forecast <- function(df, m, h, al, be, ga) {
   # smoothing
   for(t in 2:length(y)) {
     yh[t] <- l[t-1] + b[t-1] + s[max(1,t-m)]
-    l[t]  <- al * (y[t] - s[max(1,t-m)]) + (1 - al) * (l[t-1] + b[t-1])
-    b[t]  <- be * (l[t] - l[t-1]) + (1 - be) * b[t-1]
+    
+    l[t]  <- al * (y[t] - s[max(1,t-m)])   + (1 - al) * (l[t-1] + b[t-1])
+    b[t]  <- be * (l[t] - l[t-1])          + (1 - be) * b[t-1]
     s[t]  <- ga * (y[t] - l[t-1] - b[t-1]) + (1 - ga) * s[max(1,t-m)]
   }
   

@@ -1,0 +1,45 @@
+Install tesseract RC 3.03
+Install Leptonica 1.7+
+Install jTessBoxEditor
+
+convert -density 500 test.pdf -quality 100 test.png 
+convert -density 500 training.pdf -quality 100 training.png
+tesseract test.png test -l eng
+
+PDF to TIFF:
+    gs -dNOPAUSE -q -r300 -sDEVICE=tiffg4 -dBATCH -sOutputFile=eng2.LobsterTwo.exp0.tif -dFirstPage=1 -dLastPage=3 LobsterTwo.pdf
+
+
+Create Box file:
+
+    tesseract eng2.LobsterTwo.exp0.tif eng2.LobsterTwo.exp0 batch.nochop makebox
+    tesseract eng2.LobsterTwo.exp0.tif eng2.LobsterTwo.exp0 -l eng2 batch.nochop makebox
+
+Correct Box file (mind order of characters)
+
+Two files:
+- eng2.LobsterTwo.exp0.tif
+- eng2.LobsterTwo.exp0.box
+
+Training:
+
+tesseract eng2.LobsterTwo.exp0.tif eng2.LobsterTwo.exp0 nobatch box.train
+
+unicharset_extractor eng.LobsterTwo.exp0.box
+
+echo "LobsterTwo 0 0 0 0 0" > font_properties
+
+shapeclustering -F font_properties -U unicharset eng2.LobsterTwo.exp0.tr
+mftraining -F font_properties -U unicharset -O eng2.unicharset eng2.LobsterTwo.exp0.tr
+cntraining eng2.LobsterTwo.exp0.tr
+
+
+mv inttemp eng2.inttemp
+mv normproto eng2.normproto
+mv pffmtable eng2.pffmtable
+mv shapetable eng2.shapetable
+combine_tessdata eng2.
+
+sudo cp eng2.traineddata /usr/local/share/tessdata/
+
+tesseract test_LobsterTwo.png test_LobsterTwo_1 -l eng2 
