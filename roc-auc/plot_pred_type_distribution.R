@@ -9,7 +9,8 @@ plot_pred_type_distribution <- function(df, threshold) {
   
   ggplot(data=df, aes(x=survived, y=pred)) + 
     geom_violin(fill=rgb(1,1,1,alpha=0.6), color=NA) + 
-    geom_jitter(aes(color=pred_type)) + 
-    geom_hline(aes(yintercept=threshold), color="red")
-  
+    geom_jitter(aes(color=pred_type), shape=1) +
+    geom_hline(yintercept=threshold, color="red", alpha=0.6) +
+    scale_color_discrete(name = "type") +
+    labs(title=sprintf("Threshold at %.2f", threshold))
 }

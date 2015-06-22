@@ -12,8 +12,6 @@ calculate_roc <- function(df, cost_of_fp, cost_of_fn, n=100) {
       sum(df$pred < threshold & df$survived == 1) * cost_of_fn
   }
   
-  norm_vec <- function(v) (v - min(v))/diff(range(v))
-  
   roc <- data.frame(threshold = seq(0,1,length.out=n), tpr=NA, fpr=NA)
   roc$tpr <- sapply(roc$threshold, function(th) tpr(df, th))
   roc$fpr <- sapply(roc$threshold, function(th) fpr(df, th))
