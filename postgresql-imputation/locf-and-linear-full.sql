@@ -12,21 +12,21 @@ create aggregate locf(float) (
 );
 
 with 
-t0 as (
+tbl0 as (
     select a,b,t,v,
            locf(v) over t_asc as x1,
            locf(v) over t_desc as x2, 
            locf(case when v is not null then t else null end) 
-                over t_desc as t1
+                over t_desc as t2
     from tbl
     window t_asc as (partition by a,b order by t),
            t_desc as (partition by a,b order by t desc)
 ),
-t1 as (
-    select a,b,t,v,x1,x2,t1,
+tbl1 as (
+    select a,b,t,v,x1,x2,t2,
         case
             when 
-                t1 != min(t) over imputed 
+                t2 != min(t) over imputed 
                 and x1 is not null 
                 and x2 is not null
             then 
@@ -34,15 +34,15 @@ t1 as (
                     (x2 - x1)
                     *
                     (t - min(t) over imputed) /
-                    (t1 - (min(t) over imputed))
+                    (t2 - (min(t) over imputed))
                 )
             else coalesce(x1,x2)
         end as v_final
-    from t0
+    from tbl0
     window imputed as (partition by a,b,x1)
     order by a,b,t
 )
-select * from t1 order by a,b,t;
+select * from tbl1 order by a,b,t;
 
 /*
 -- use this instead of the last select above to
