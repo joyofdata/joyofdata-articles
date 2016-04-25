@@ -1,5 +1,6 @@
 plot_roc <- function(roc, threshold, cost_of_fp, cost_of_fn) {
   library(gridExtra)
+  library(grid)
   
   norm_vec <- function(v) (v - min(v))/diff(range(v))
   
